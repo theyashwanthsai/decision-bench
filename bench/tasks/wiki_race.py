@@ -6,7 +6,7 @@ to judge which one is semantically closer to the target.
 import random
 from collections import deque
 
-from decide.env import Env
+from bench.task import Task
 
 # title: (one-line summary, [outgoing links])
 PAGES = {
@@ -109,7 +109,7 @@ def distances_to(target):
     return dist
 
 
-class WikiRace(Env):
+class WikiRace(Task):
     name = "wiki-race"
 
     def reset(self, seed):
@@ -122,7 +122,7 @@ class WikiRace(Env):
                 break
         self.page = rng.choice(far)
         self.optimal = self.dist[self.page]
-        self.budget = self.optimal * 2
+        self.budget = self.max_steps = self.optimal * 2
         self.moves = 0
         self.instruction = (f"Reach the page '{self.target}' by following links, starting from "
                             f"'{self.page}'. You may only follow links on the current page.")
@@ -131,6 +131,12 @@ class WikiRace(Env):
         summary, _ = PAGES[self.page]
         return {"current_page": self.page, "summary": summary, "target_page": self.target,
                 "moves_left": self.budget - self.moves}
+
+    def place(self):
+        return self.page
+
+    def memo(self):
+        return f"{PAGES[self.page][0]} Links to: {', '.join(PAGES[self.page][1])}"
 
     def actions(self):
         return {f"go:{q}": f"Follow the link to '{q}' ({PAGES[q][0]})" for q in PAGES[self.page][1]}

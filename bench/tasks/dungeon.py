@@ -7,7 +7,7 @@ it, and come back. The oracle plans optimally over the full state space.
 import random
 from collections import deque
 
-from decide.env import Env
+from bench.task import Task
 
 ROOMS = ["Great Hall", "Kitchen", "Armory", "Library", "Chapel", "Cellar", "Garden", "Well Room",
          "Guard Post", "Gallery", "Pantry", "Study", "Crypt", "Tower Stair", "Courtyard", "Stable",
@@ -27,7 +27,7 @@ DIRS = {"north": "south", "south": "north", "east": "west", "west": "east"}
 GOAL = "crown"
 
 
-class Dungeon(Env):
+class Dungeon(Task):
     name = "dungeon"
     instruction = "Find the crown hidden in the vault and take it. Some passages need the right tool to get through."
 
@@ -126,6 +126,15 @@ class Dungeon(Env):
         return {"room": room, "exits": exits,
                 "items_here": sorted(i for i, r in self.items.items() if r == room and i not in inv),
                 "inventory": sorted(inv), "last_result": self.last}
+
+    def place(self):
+        return self.state[0]
+
+    def memo(self):
+        o = self.observe()
+        exits = "; ".join(f"{d}: {v}" for d, v in o["exits"].items())
+        items = ", ".join(o["items_here"]) or "none"
+        return f"exits {exits}. items here: {items}"
 
     def actions(self):
         verbs = {"go": "walk {}", "take": "pick up the {}", "use": "use the {} here"}
